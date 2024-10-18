@@ -79,7 +79,7 @@ async def main():
         print(f"Connection error: {e}")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Close audio streams
     input_stream.stop_stream()
     input_stream.close()
