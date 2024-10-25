@@ -1,7 +1,6 @@
 # Python client to run Moshi
 ## Requirements
   - [pyaudio](https://pypi.org/project/PyAudio/)
-  - [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
   - [<= Python3.12.7](https://www.python.org/downloads/release/python-3127/)
   - [poetry](https://python-poetry.org/docs/) (optionnal)
 
