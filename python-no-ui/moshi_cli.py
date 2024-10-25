@@ -1,50 +1,109 @@
+import aiohttp
+import argparse
 import asyncio
-import opuslib
-import pyaudio
+import aiohttp.client_exceptions
+import numpy as np
+import queue
+import sphn
+import sounddevice
 import ssl
-import websockets
-from enum import Enum
 
-DEPLOYMENT_UUID: str = "CHANGE_ME"
-IAM_API_KEY: str = "CHANGE_ME"
 
-SAMPLE_RATE: int = 24000
+SAMPLE_RATE: int = 24000 # Valid options are 8000, 12000, 16000, 24000, or 48000 Hz
 CHANNELS: int = 1 # Mono only
-FRAME_SIZE: int = 1920 # 20ms of audio
+FRAME_SIZE: int = 1920 # Valid options are 2.5 (60), 5 (120), 10 (240), 20 (480), 40 (960), 60 (1440) ms, etc.
 
-class PacketType(Enum):
-    HANDSHAKE = 0
-    AUDIO = 1
-    TEXT = 2
-    CONTROL = 3
-    METADATA = 4
-    ERROR = 5
-    PING = 6
 
-async def send_data(websocket: websockets.WebSocketClientProtocol, opus_encoder: opuslib.Encoder, input_stream: pyaudio.Stream):
+async def send_data(ws: aiohttp.ClientWebSocketResponse, encoder: sphn.OpusStreamWriter):
+    """
+    Sends audio data to the server.
+
+    Args:
+        ws: The websocket connection.
+        encoder: The opus encoder.
+    """
     while True:
-        pcm16_data = input_stream.read(FRAME_SIZE)
-        opus_data = opus_encoder.encode(pcm16_data, FRAME_SIZE)
-        await websocket.send(bytes([PacketType.AUDIO.value]) + opus_data)
+        await asyncio.sleep(0.001)
+        opus_data = encoder.read_bytes()
+        if len(opus_data) == 0:
+            continue
+        await ws.send_bytes(b"\x01" + opus_data)
 
-async def receive_data(websocket: websockets.WebSocketClientProtocol, opus_decoder: opuslib.Decoder, output_stream: pyaudio.Stream):
+async def decode_data(decoder: sphn.OpusStreamReader, queue: queue.Queue):
+    """
+    Decode the Opus data in PCM and put it in the queue in chunks of FRAME_SIZE.
+
+    Args:
+        decoder: The opus decoder.
+        queue: The queue to put the PCM data.
+    """
+    pcm_data = None
     while True:
-        data = await websocket.recv()
-        match PacketType(data[0]):
-            case PacketType.AUDIO:
-                pcm16_data = opus_decoder.decode(data[1:])
-                output_stream.write(pcm16_data)
-            case PacketType.TEXT:
-                print(data[1:].decode())
+        await asyncio.sleep(0.001) # Wait for the decoder to have some data
+        pcm_chunk = decoder.read_pcm()
+        pcm_data = np.concatenate((pcm_data, pcm_chunk)) if pcm_data is not None else pcm_chunk
+        while pcm_data.shape[-1] >= FRAME_SIZE:
+            queue.put(pcm_data[:FRAME_SIZE])
+            pcm_data = pcm_data[FRAME_SIZE:]
+
+async def receive_data(ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusStreamReader):
+    """
+    Receives data from the server.
+
+    Args:
+        ws: The websocket connection.
+        decoder: The opus decoder.
+    """
+    async for msg in ws:
+        match msg.type:
+            case aiohttp.WSMsgType.BINARY:
+                match msg.data[0]:
+                    case b"\x01": # Audio data (opus)
+                        decoder.append_bytes(msg.data[1:])
+                    case b"\x02": # Text data
+                        print(msg.data[1:].decode("utf-8"), end="", flush=True)
+                    case _:
+                        continue
+            case aiohttp.WSMsgType.CLOSED:
+                print("Connection closed.")
+                break
+            case aiohttp.WSMsgType.ERROR:
+                print("Connection error.")
+                break
             case _:
-                pass
+                print("Unexpected message type.")
+                break
 
-async def main():
+def read_audio_callback(encoder: sphn.OpusStreamWriter):
+    """
+    Callback to read audio data from the microphone.
+    """
+    def read_audio(indata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags):
+        """
+        Appends the PCM audio data to the encoder.
+        """
+        encoder.append_pcm(indata[:, 0])
+    return read_audio
+
+def play_audio_callback(queue: queue.Queue):
+    """
+    Callback to play audio data to the speaker.
+    """
+    def play_audio(outdata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags):
+        """
+        Gets the PCM audio data from the audio queue and plays it.
+        """
+        if not queue.empty():
+            outdata[:, 0] = queue.get()
+        else:
+            outdata.fill(0)
+    return play_audio
+
+async def main(deployment_uuid: str, iam_api_key: str):
     # Endpoint
-    uri = f"wss://{DEPLOYMENT_UUID}.ifr.fr-srr.scaleway.com/api/chat"
+    uri = f"wss://{deployment_uuid}.ifr.fr-srr.scaleway.com/api/chat"
     headers = {
-        "Authorization": f"Bearer {IAM_API_KEY}",
-        "Host": f"{DEPLOYMENT_UUID}.ifr.fr-srr.scw.cloud"
+        "Authorization": f"Bearer {iam_api_key}"
     }
 
     # To be removed
@@ -52,40 +111,54 @@ async def main():
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
+    # Initialize the audio queue, which is used as a jitter buffer to smooth out variations in packet arrival times
+    audio_queue = queue.Queue()
+
     # Initialize opus encoder and decoder
-    encoder = opuslib.Encoder(SAMPLE_RATE, CHANNELS, "audio")
-    decoder = opuslib.Decoder(SAMPLE_RATE, CHANNELS)
+    opus_encoder = sphn.OpusStreamWriter(SAMPLE_RATE)
+    opus_decoder = sphn.OpusStreamReader(SAMPLE_RATE)
 
     # Initialize audio streams
-    p = pyaudio.PyAudio()
-    input_stream = p.open(format=pyaudio.paInt16,
-                          channels=CHANNELS,
-                          rate=SAMPLE_RATE,
-                          input=True,
-                          frames_per_buffer=FRAME_SIZE)
-    output_stream = p.open(format=pyaudio.paInt16,
-                          channels=CHANNELS,
-                          rate=SAMPLE_RATE,
-                          output=True)
+    input_stream = sounddevice.InputStream(
+        samplerate=SAMPLE_RATE,
+        channels=CHANNELS,
+        blocksize=FRAME_SIZE,
+        callback=read_audio_callback(opus_encoder),
+    )
+    output_stream = sounddevice.OutputStream(
+        samplerate=SAMPLE_RATE,
+        channels=CHANNELS,
+        blocksize=FRAME_SIZE,
+        callback=play_audio_callback(audio_queue),
+    )
 
     # Main business logic
     try:
-        async with websockets.connect(uri, extra_headers=headers, ssl=ssl_context) as websocket:
-            await asyncio.gather(
-                send_data(websocket, encoder, input_stream),
-                receive_data(websocket, decoder, output_stream)
-            )
-    except (websockets.exceptions.ConnectionClosedError, websockets.exceptions.InvalidStatusCode) as e:
-        print(f"Connection error: {e}")
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(uri, headers=headers, ssl=False) as websocket:
+                with input_stream, output_stream:
+                    await asyncio.gather(
+                        receive_data(websocket, opus_decoder),
+                        decode_data(opus_decoder, audio_queue),
+                        send_data(websocket, opus_encoder)
+                    )
+    except aiohttp.client_exceptions.WSServerHandshakeError as e:
+        if e.status == 403:
+            print("Error: Invalid IAM API key.")
+        else:
+            print(f"Error: {e}")
+    except aiohttp.client_exceptions.ClientConnectorDNSError:
+        print("Error: Invalid deployment UUID.")
     except Exception as e:
         print(f"Error: {e}")
-
-    # Close audio streams
-    input_stream.stop_stream()
-    input_stream.close()
-    output_stream.stop_stream()
-    output_stream.close()
-    p.terminate()
-
+    
 if __name__ == "__main__":
-    asyncio.run(main())
+    aparser = argparse.ArgumentParser()
+    aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID.", required=True)
+    aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key.", required=True)
+    args = aparser.parse_args()
+
+    try:
+        asyncio.run(main(args.deployment_uuid, args.iam_api_key))
+    except KeyboardInterrupt:
+        print("Exiting.")

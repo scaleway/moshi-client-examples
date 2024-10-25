@@ -7,5 +7,5 @@
 - Then do :
 
 ```bash
-python3 moshi_cli.py ${MOSHI_DEPLOYMENT_ID}.ifr.fr-srr.scaleway.com ${MOSHI_SECRET_KEY}
+python3 moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
 ```
