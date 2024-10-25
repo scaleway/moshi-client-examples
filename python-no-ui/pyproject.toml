@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "python-no-ui"
+version = "0.1.0"
+description = ""
+authors = ["cseguret <cseguret@scaleway.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12.7"
+opuslib = "^3.0.1"
+websockets = "^13.1"
+PyAudio = "^0.2.14"
+aiohttp = "^3.10.10"
+numpy = "^2.1.2"
+sphn = "^0.1.4"
+sounddevice = "^0.5.1"
+
+[tool.poetry.scripts]
+moshi-cli = "moshi_cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

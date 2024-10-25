@@ -17,10 +17,6 @@ FRAME_SIZE: int = 1920 # Valid options are 2.5 (60), 5 (120), 10 (240), 20 (480)
 async def send_data(ws: aiohttp.ClientWebSocketResponse, encoder: sphn.OpusStreamWriter):
     """
     Sends audio data to the server.
-
-    Args:
-        ws: The websocket connection.
-        encoder: The opus encoder.
     """
     while True:
         await asyncio.sleep(0.001)
@@ -49,15 +45,11 @@ async def decode_data(decoder: sphn.OpusStreamReader, queue: queue.Queue):
 async def receive_data(ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusStreamReader):
     """
     Receives data from the server.
-
-    Args:
-        ws: The websocket connection.
-        decoder: The opus decoder.
     """
     async for msg in ws:
         match msg.type:
             case aiohttp.WSMsgType.BINARY:
-                match msg.data[0]:
+                match msg.data[0:1]:
                     case b"\x01": # Audio data (opus)
                         decoder.append_bytes(msg.data[1:])
                     case b"\x02": # Text data
