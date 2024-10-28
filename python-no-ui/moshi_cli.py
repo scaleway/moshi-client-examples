@@ -9,12 +9,16 @@ import sounddevice
 import ssl
 
 
-SAMPLE_RATE: int = 24000 # Valid options are 8000, 12000, 16000, 24000, or 48000 Hz
-CHANNELS: int = 1 # Mono only
-FRAME_SIZE: int = 1920 # Valid options are 2.5 (60), 5 (120), 10 (240), 20 (480), 40 (960), 60 (1440) ms, etc.
+SAMPLE_RATE: int = 24000  # Valid options are 8000, 12000, 16000, 24000, or 48000 Hz
+CHANNELS: int = 1  # Mono only
+FRAME_SIZE: int = (
+    1920  # Valid options are 2.5 (60), 5 (120), 10 (240), 20 (480), 40 (960), 60 (1440) ms, etc.
+)
 
 
-async def send_data(ws: aiohttp.ClientWebSocketResponse, encoder: sphn.OpusStreamWriter):
+async def send_data(
+    ws: aiohttp.ClientWebSocketResponse, encoder: sphn.OpusStreamWriter
+):
     """
     Sends audio data to the server.
     """
@@ -24,6 +28,7 @@ async def send_data(ws: aiohttp.ClientWebSocketResponse, encoder: sphn.OpusStrea
         if len(opus_data) == 0:
             continue
         await ws.send_bytes(b"\x01" + opus_data)
+
 
 async def decode_data(decoder: sphn.OpusStreamReader, queue: queue.Queue):
     """
@@ -35,14 +40,19 @@ async def decode_data(decoder: sphn.OpusStreamReader, queue: queue.Queue):
     """
     pcm_data = None
     while True:
-        await asyncio.sleep(0.001) # Wait for the decoder to have some data
+        await asyncio.sleep(0.001)  # Wait for the decoder to have some data
         pcm_chunk = decoder.read_pcm()
-        pcm_data = np.concatenate((pcm_data, pcm_chunk)) if pcm_data is not None else pcm_chunk
+        pcm_data = (
+            np.concatenate((pcm_data, pcm_chunk)) if pcm_data is not None else pcm_chunk
+        )
         while pcm_data.shape[-1] >= FRAME_SIZE:
             queue.put(pcm_data[:FRAME_SIZE])
             pcm_data = pcm_data[FRAME_SIZE:]
 
-async def receive_data(ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusStreamReader):
+
+async def receive_data(
+    ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusStreamReader
+):
     """
     Receives data from the server.
     """
@@ -50,9 +60,9 @@ async def receive_data(ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusSt
         match msg.type:
             case aiohttp.WSMsgType.BINARY:
                 match msg.data[0:1]:
-                    case b"\x01": # Audio data (opus)
+                    case b"\x01":  # Audio data (opus)
                         decoder.append_bytes(msg.data[1:])
-                    case b"\x02": # Text data
+                    case b"\x02":  # Text data
                         print(msg.data[1:].decode("utf-8"), end="", flush=True)
                     case _:
                         continue
@@ -66,22 +76,31 @@ async def receive_data(ws: aiohttp.ClientWebSocketResponse, decoder: sphn.OpusSt
                 print("Unexpected message type.")
                 break
 
+
 def read_audio_callback(encoder: sphn.OpusStreamWriter):
     """
     Callback to read audio data from the microphone.
     """
-    def read_audio(indata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags):
+
+    def read_audio(
+        indata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags
+    ):
         """
         Appends the PCM audio data to the encoder.
         """
         encoder.append_pcm(indata[:, 0])
+
     return read_audio
+
 
 def play_audio_callback(queue: queue.Queue):
     """
     Callback to play audio data to the speaker.
     """
-    def play_audio(outdata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags):
+
+    def play_audio(
+        outdata: np.ndarray, frames: int, time: float, status: sounddevice.CallbackFlags
+    ):
         """
         Gets the PCM audio data from the audio queue and plays it.
         """
@@ -89,14 +108,14 @@ def play_audio_callback(queue: queue.Queue):
             outdata[:, 0] = queue.get()
         else:
             outdata.fill(0)
+
     return play_audio
 
-async def main(deployment_uuid: str, iam_api_key: str, insecure: bool):
+
+async def main(deployment_id: str, secret_key: str, insecure: bool):
     # Endpoint
-    uri = f"wss://{deployment_uuid}.ifr.fr-srr.scaleway.com/api/chat"
-    headers = {
-        "Authorization": f"Bearer {iam_api_key}"
-    }
+    uri = f"wss://{deployment_id}.ifr.fr-srr.scaleway.com/api/chat"
+    headers = {"Authorization": f"Bearer {secret_key}"}
 
     # Initialize the audio queue, which is used as a jitter buffer to smooth out variations in packet arrival times
     audio_queue = queue.Queue()
@@ -127,7 +146,7 @@ async def main(deployment_uuid: str, iam_api_key: str, insecure: bool):
                     await asyncio.gather(
                         receive_data(websocket, opus_decoder),
                         decode_data(opus_decoder, audio_queue),
-                        send_data(websocket, opus_encoder)
+                        send_data(websocket, opus_encoder),
                     )
     except aiohttp.client_exceptions.WSServerHandshakeError as e:
         if e.status == 403:
@@ -138,15 +157,17 @@ async def main(deployment_uuid: str, iam_api_key: str, insecure: bool):
         print("Error: Invalid deployment UUID.")
     except Exception as e:
         print(f"Error: {e}")
-    
+
+
 if __name__ == "__main__":
     aparser = argparse.ArgumentParser()
-    aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID.", required=True)
-    aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key.", required=True)
+
+    aparser.add_argument("-d", "--deployment-id", type=str, help="The deployment UUID.", required=True)
+    aparser.add_argument("-k", "--secret-key", type=str, help="The IAM API key.", required=True)
     aparser.add_argument("--insecure", action="store_true", help="Skip SSL certificate validation.")
     args = aparser.parse_args()
 
     try:
-        asyncio.run(main(args.deployment_uuid, args.iam_api_key, args.insecure))
+        asyncio.run(main(args.deployment_id, args.secret_key, args.insecure))
     except KeyboardInterrupt:
         print("Exiting.")

@@ -59,24 +59,12 @@ impl AudioOutputData_ {
         })
     }
 
-    pub(crate) fn total_samples(&self) -> usize {
-        self.total_samples
-    }
-
-    pub(crate) fn samples_in_buffer(&self) -> usize {
-        self.resampled_data.len()
-    }
-
     pub(crate) fn take_all(&mut self) -> Vec<f32> {
         let mut data = Vec::with_capacity(self.resampled_data.len());
         while let Some(elem) = self.resampled_data.pop_back() {
             data.push(elem);
         }
         data
-    }
-
-    pub(crate) fn db10(&self) -> f32 {
-        10. + (self.mean_squares + 1e-10).log10()
     }
 
     // Assumes that the input buffer is large enough.

@@ -81,12 +81,6 @@ pub mod client {
             Ok(Self { pw, encoder, out_pcm, out_pcm_buf, total_data: 0, sender })
         }
 
-        pub async fn send_control(&mut self, control: u8) -> Result<()> {
-            let msg = Message::Binary(vec![3u8, control]);
-            self.sender.send(msg).await?;
-            Ok(())
-        }
-
         pub async fn send_pcm(&mut self, pcm: &[f32]) -> Result<()> {
             self.out_pcm.extend(pcm.iter());
             self.total_data += pcm.len();
@@ -122,12 +116,12 @@ pub mod client {
         }
     }
 
-    pub async fn run(host: String, secret_key: String, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
+    pub async fn run(deployment_id: String, secret_key: String, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
         use tokio_tungstenite::tungstenite::client::IntoClientRequest;
-        let uri = url::Url::parse(&format!("wss://{host}/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
+        let uri = url::Url::parse(&format!("wss://{deployment_id}.ifr.fr-srr.scaleway.com/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
         let mut req = uri.into_client_request()?;
         let headers = req.headers_mut();
-        headers.insert("host", host.parse()?);
+        // headers.insert("host", host.parse()?);
         headers.insert("Authorization", format!("Bearer {secret_key}").parse()?);
 
         let (_stream, ad) = crate::audio_io::setup_output_stream(true)?;
@@ -151,7 +145,6 @@ pub mod client {
             let mut pr = ogg::reading::async_api::PacketReader::new(rx);
             let mut pcm_buf = vec![0f32; 24_000 * 120];
             let mut all_pcms = vec![];
-            let mut total_size = 0;
             tracing::info!("waiting for audio data");
             while let Some(packet) = pr.next().await {
                 let packet = packet?;
@@ -165,7 +158,6 @@ pub mod client {
                 )?;
                 if size > 0 {
                     let pcm = &pcm_buf[..size];
-                    total_size += size;
                     all_pcms.push(pcm.to_vec());
                     let mut ad = ad.lock().unwrap();
                     ad.push_samples(pcm)?;

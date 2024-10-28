@@ -7,5 +7,5 @@
 - Then do :
 
 ```bash
-cargo run --bin moshi-cli -r -- run --host ${MOSHI_DEPLOYMENT_ID}.ifr.fr-srr.scaleway.com --secret-key ${MOSHI_SECRET_KEY}
+cargo run --bin moshi-cli -r -- run --deployment-id ${MOSHI_DEPLOYMENT_ID} --secret-key ${MOSHI_SECRET_KEY}
 ```

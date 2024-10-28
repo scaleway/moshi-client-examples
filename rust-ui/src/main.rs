@@ -32,7 +32,7 @@ struct Args {
 enum Command {
     Run {
         #[arg(long)]
-        host: String,
+        deployment_id: String,
 
         #[arg(long)]
         secret_key: String,
@@ -65,9 +65,9 @@ async fn main() -> Result<()> {
         None
     };
     match args.command {
-        Command::Run { host, secret_key, audio_topk, audio_temperature, text_topk, text_temperature } => {
+        Command::Run { deployment_id, secret_key, audio_topk, audio_temperature, text_topk, text_temperature } => {
             tracing_subscriber::fmt::init();
-            multistream::client_tui::run(host, secret_key, audio_topk, audio_temperature, text_topk, text_temperature).await?
+            multistream::client_tui::run(deployment_id, secret_key, audio_topk, audio_temperature, text_topk, text_temperature).await?
         }
     }
     Ok(())
