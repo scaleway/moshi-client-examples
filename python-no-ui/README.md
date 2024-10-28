@@ -21,6 +21,6 @@ poetry run python moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
 
 ### Without poetry
 ```sh
-python3 -mpip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 python3 moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
 ```
