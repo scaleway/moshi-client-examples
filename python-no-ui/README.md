@@ -16,11 +16,11 @@
 ```sh
 poetry env use 3.12.7
 poetry install
-poetry run python moshi_cli.py -d <DEPLOYMENT_UUID> -k <IAM_API_KEY>
+poetry run python moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
 ```
 
 ### Without poetry
 ```sh
 python3 -mpip install -r requirements.txt
-python3 moshi_cli.py -d <DEPLOYMENT_UUID> -k <IAM_API_KEY>
+python3 moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
 ```

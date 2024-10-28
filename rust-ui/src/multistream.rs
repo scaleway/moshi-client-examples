@@ -383,12 +383,12 @@ pub mod client_tui {
         })
     }
 
-    pub async fn run(host: String, secret_key: String, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
+    pub async fn run(deployment_id: String, secret_key: String, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
         use tokio_tungstenite::tungstenite::client::IntoClientRequest;
-        let uri = url::Url::parse(&format!("wss://{host}/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
+        let uri = url::Url::parse(&format!("wss://{deployment_id}.ifr.fr-srr.scaleway.com/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
         let mut req = uri.into_client_request()?;
         let headers = req.headers_mut();
-        headers.insert("host", host.parse()?);
+        // headers.insert("host", host.parse()?);
         headers.insert("Authorization", format!("Bearer {secret_key}").parse()?);
 
         //tracing::info!("connecting to {uri}");
