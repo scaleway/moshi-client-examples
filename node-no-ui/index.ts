@@ -11,7 +11,6 @@ import { Queue } from './queue';
 const SAMPLE_RATE = 24000;
 const CHANNELS = 1;
 const FRAME_SIZE = 1920;
-const MIN_QUEUE_LENGTH = FRAME_SIZE * 5;
 
 interface Args {
     deploymentID: string;
@@ -108,12 +107,13 @@ decodeProcess.stdout.on('data', (data: Buffer) => {
 
 // Process audio queue and play through speaker
 const processAudioQueue = () => {
-    while (!audioQueue.isEmpty() && audioQueue.length * FRAME_SIZE >= MIN_QUEUE_LENGTH) {
+    while (!audioQueue.isEmpty()) {
         const pcmData = audioQueue.dequeue();
         if (pcmData) speakerInstance.write(pcmData);
     }
 };
-setInterval(processAudioQueue, 5);
+
+audioQueue.on('enqueue', processAudioQueue);
 
 // Cleanup function for shutdown
 const cleanup = () => {
