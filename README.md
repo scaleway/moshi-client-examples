@@ -19,6 +19,6 @@ To get started quickly, here’s a general overview of the setup steps:
 
 1. **Clone the repository**
    ```sh
-   git clone https://github.com/your-username/moshi-client.git
+   git clone https://github.com/scaleway/moshi-client-examples
    cd moshi-client
    ```
