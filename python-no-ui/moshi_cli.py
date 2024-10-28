@@ -91,17 +91,12 @@ def play_audio_callback(queue: queue.Queue):
             outdata.fill(0)
     return play_audio
 
-async def main(deployment_uuid: str, iam_api_key: str):
+async def main(deployment_uuid: str, iam_api_key: str, insecure: bool):
     # Endpoint
     uri = f"wss://{deployment_uuid}.ifr.fr-srr.scaleway.com/api/chat"
     headers = {
         "Authorization": f"Bearer {iam_api_key}"
     }
-
-    # To be removed
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
 
     # Initialize the audio queue, which is used as a jitter buffer to smooth out variations in packet arrival times
     audio_queue = queue.Queue()
@@ -127,7 +122,7 @@ async def main(deployment_uuid: str, iam_api_key: str):
     # Main business logic
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.ws_connect(uri, headers=headers, ssl=False) as websocket:
+            async with session.ws_connect(uri, headers=headers, ssl=not insecure) as websocket:
                 with input_stream, output_stream:
                     await asyncio.gather(
                         receive_data(websocket, opus_decoder),
@@ -148,9 +143,10 @@ if __name__ == "__main__":
     aparser = argparse.ArgumentParser()
     aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID.", required=True)
     aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key.", required=True)
+    aparser.add_argument("--insecure", action="store_true", help="Skip SSL certificate validation.")
     args = aparser.parse_args()
 
     try:
-        asyncio.run(main(args.deployment_uuid, args.iam_api_key))
+        asyncio.run(main(args.deployment_uuid, args.iam_api_key, args.insecure))
     except KeyboardInterrupt:
         print("Exiting.")
