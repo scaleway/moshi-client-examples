@@ -175,6 +175,6 @@ if __name__ == "__main__":
     args = aparser.parse_args()
 
     try:
-        asyncio.run(main(args.deployment_uuid, args.iam_api_key))
+        asyncio.run(main(args.deployment_id, args.secret_key))
     except KeyboardInterrupt:
         print("Exiting.")
