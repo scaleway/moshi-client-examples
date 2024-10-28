@@ -27,6 +27,7 @@ const { deploymentID, iamApiKey } = argv as Args;
 const WS_URI = `wss://${deploymentID}.ifr.fr-srr.scaleway.com/api/chat`;
 
 const audioQueue = new Queue<Buffer>();
+let decodeBuffer = Buffer.alloc(0);
 
 // Create FFmpeg encoding and decoding processes
 const createFFmpegProcess = (args: string[]): ChildProcessWithoutNullStreams => {
@@ -102,18 +103,22 @@ encodeProcess.stdout.on('data', (data: Buffer) => {
 });
 
 decodeProcess.stdout.on('data', (data: Buffer) => {
-    audioQueue.enqueue(data);
+    decodeBuffer = Buffer.concat([decodeBuffer, data]);
+
+    while (decodeBuffer.length >= FRAME_SIZE) {
+        const frame = decodeBuffer.subarray(0, FRAME_SIZE);
+        decodeBuffer = decodeBuffer.subarray(FRAME_SIZE);
+        audioQueue.enqueue(frame);
+    }
 });
 
 // Process audio queue and play through speaker
-const processAudioQueue = () => {
+audioQueue.on('enqueue', () => {
     while (!audioQueue.isEmpty()) {
         const pcmData = audioQueue.dequeue();
         if (pcmData) speakerInstance.write(pcmData);
     }
-};
-
-audioQueue.on('enqueue', processAudioQueue);
+});
 
 // Cleanup function for shutdown
 const cleanup = () => {
