@@ -31,30 +31,15 @@ type ConversationProps = {
 
 const buildURL = ({
   params,
-  workerAuthId,
-  email,
   textSeed,
   audioSeed,
 }: {
   workerAddr: string;
   params: ModelParamsValues;
-  workerAuthId?: string;
-  email?: string;
   textSeed: number;
   audioSeed: number;
 }) => {
-  // if (workerAddr == "same" || workerAddr == "") {
-  //   workerAddr = window.location.hostname + ":" + window.location.port;
-  //   console.log("Overriding workerAddr to", workerAddr);
-  // }
-  const wsProtocol = (window.location.protocol === 'https:') ? 'wss' : 'ws';
-  const url = new URL(`${wsProtocol}://${env.VITE_API_URL}/api/chat`);
-  if(workerAuthId) {
-    url.searchParams.append("worker_auth_id", workerAuthId);
-  }
-  if(email) {
-    url.searchParams.append("email", email);
-  }
+  const url = new URL(`wss://${env.VITE_SCW_PROJECT_ID}.ifr.${env.VITE_SCW_DEFAULT_REGION}.scaleway.com/api/chat`);
   url.searchParams.append("text_temperature", params.textTemperature.toString());
   url.searchParams.append("text_topk", params.textTopk.toString());
   url.searchParams.append("audio_temperature", params.audioTemperature.toString());
@@ -66,7 +51,6 @@ const buildURL = ({
   url.searchParams.append("repetition_penalty", params.repetitionPenalty.toString());
   if (params.token && params.token != "")
     url.searchParams.append("token", params.token);
-  // console.log(url.toString());
   return url.toString();
 };
 
@@ -113,8 +97,6 @@ export const Conversation:FC<ConversationProps> = ({
   const WSURL = buildURL({
     workerAddr,
     params: {...modelParams, token: params.token},
-    workerAuthId,
-    email: email,
     textSeed: textSeed,
     audioSeed: audioSeed,
   });
