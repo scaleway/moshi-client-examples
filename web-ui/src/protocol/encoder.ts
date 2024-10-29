@@ -82,7 +82,6 @@ export const decodeMessage = (data: Uint8Array): WSMessage => {
         type: "ping",
       }
     default: {
-      console.log(type);
       throw new Error("Unknown message type");
     }
   }

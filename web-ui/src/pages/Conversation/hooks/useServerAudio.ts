@@ -81,11 +81,7 @@ export const useServerAudio = ({setGetAudioStats}: useServerAudioArgs) => {
     [onDecode],
   );
 
-  let midx = 0;
   const decodeAudio = useCallback((data: Uint8Array) => {
-    if (midx < 5) {
-      console.log(Date.now() % 1000, "Got NETWORK message", micDuration.current - workletStats.current.actualAudioPlayed, midx++);
-    }
     decoderWorker.current.postMessage(
       {
         command: "decode",
@@ -114,12 +110,10 @@ export const useServerAudio = ({setGetAudioStats}: useServerAudioArgs) => {
       return;
     }
     worklet.current.port.postMessage({type: "reset"});
-    console.log(Date.now() % 1000, "Should start in a bit");
     startRecording();
     currentSocket.addEventListener("message", onSocketMessage);
     totalAudioMessages.current = 0;
     return () => {
-      console.log("Stop recording called in unknown function.")
       stopRecording();
       startTime.current = null;
       currentSocket.removeEventListener("message", onSocketMessage);
@@ -128,7 +122,6 @@ export const useServerAudio = ({setGetAudioStats}: useServerAudioArgs) => {
 
   useEffect(() => {
     if (setGetAudioStats) {
-      console.log("Setting getAudioStats");
       setGetAudioStats(getAudioStats);
     }
   }, [setGetAudioStats, getAudioStats]);
@@ -145,10 +138,6 @@ export const useServerAudio = ({setGetAudioStats}: useServerAudioArgs) => {
       outputBufferSampleRate: audioContext.current.sampleRate,
       resampleQuality: 0,
     });
-
-    return () => {
-      console.log("Terminating worker");
-    };
   }, [onWorkerMessage]);
 
   return {

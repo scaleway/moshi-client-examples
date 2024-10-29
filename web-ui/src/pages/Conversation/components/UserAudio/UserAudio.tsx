@@ -11,11 +11,9 @@ export const UserAudio: FC<UserAudioProps> = ({copyCanvasRef}) => {
   const { sendMessage, isConnected } = useSocketContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const onRecordingStart = useCallback(() => {
-    console.log("Recording started");
   }, []);
 
   const onRecordingStop = useCallback(() => {
-    console.log("Recording stopped");
   }, []);
 
   const onRecordingChunk = useCallback(
@@ -57,7 +55,6 @@ export const UserAudio: FC<UserAudioProps> = ({copyCanvasRef}) => {
       });
     }
     return () => {
-      console.log("Stop recording called from somewhere else.");
       stopRecording();
       res?.source?.disconnect();
     };

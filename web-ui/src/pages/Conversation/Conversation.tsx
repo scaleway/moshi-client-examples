@@ -121,7 +121,6 @@ export const Conversation:FC<ConversationProps> = ({
 
   const onDisconnect = useCallback(() => {
     setIsOver(true);
-    console.log("on disconnect!");
     stopRecording();
   }, [setIsOver]);
 
@@ -144,7 +143,6 @@ export const Conversation:FC<ConversationProps> = ({
       }
       setAudioURL(URL.createObjectURL(blob));
       audioChunks.current = [];
-      console.log("Audio Recording and encoding finished");
     };
   }, [mediaRecorder, audioRecorder, setVideoURL, setAudioURL, videoChunks, audioChunks]);
 
@@ -159,23 +157,18 @@ export const Conversation:FC<ConversationProps> = ({
   useEffect(() => {
 
     if(!canvasRef) {
-      console.log("No canvas ref");
       return;
     }
     if(!logoRef) {
-      console.log("No logo ref");
       return;
     }
     if(!isLogoLoaded) {
-      console.log("Logo not loaded");
       return;
     }
     if(!canvasRef.current) {
-      console.log("No canvas");
       return;
     }
     if(!logoRef.current) {
-      console.log("No logo");
       return;
     }
 
@@ -192,19 +185,15 @@ export const Conversation:FC<ConversationProps> = ({
     if(isRecording.current) {
       return;
     }
-    console.log(Date.now() % 1000, "Starting recording");
-    console.log("Starting recording");
     if(canvasRef.current) {
       // Note: Attaching a track from this stream to the existing MediaRecorder
       // rather than creating a new MediaRecorder for the canvas stream
       // doesn't work on Safari as it just ends the recording immediately.
       // It works on Chrome though and is much cleaner.
-      console.log("Adding canvas to stream");
       const captureStream = canvasRef.current.captureStream(30);
       captureStream.addTrack(audioStreamDestination.current.stream.getAudioTracks()[0]);
       mediaRecorder.current = new MediaRecorder(captureStream, { mimeType: getMimeType("video"), videoBitsPerSecond: 1000000});
       mediaRecorder.current.ondataavailable = (e) => {
-        console.log("Video data available");
         videoChunks.current.push(e.data);
       };
       mediaRecorder.current.onstop = async () => {
@@ -217,7 +206,6 @@ export const Conversation:FC<ConversationProps> = ({
         }
         setVideoURL(URL.createObjectURL(blob));
         videoChunks.current = [];
-        console.log("Video Recording and encoding finished");
       };
     }
     worklet.current?.connect(audioStreamDestination.current);
@@ -231,8 +219,6 @@ export const Conversation:FC<ConversationProps> = ({
   }, [isRecording, setVideoURL, setVideoURL, worklet, audioStreamDestination, mediaRecorder, audioRecorder, canvasRef]);
 
   const stopRecording = useCallback(() => {
-    console.log("Stopping recording");
-    console.log("isRecording", isRecording)
     if(!isRecording.current) {
       return;
     }
@@ -322,7 +308,6 @@ export const Conversation:FC<ConversationProps> = ({
         </div>
         <canvas height={380} width={380} className="hidden" ref={canvasRef} />
         <img src={canvasLogo} ref={logoRef} className="hidden" onLoad={() => {
-          console.log("Logo loaded");
           setIsLogoLoaded(true);
         }} />
       </div>

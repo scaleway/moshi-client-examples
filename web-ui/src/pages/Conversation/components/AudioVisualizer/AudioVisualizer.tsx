@@ -11,7 +11,6 @@ export const AudioVisualizer: FC<AudioVisualizerProps> = ({ analyser }) => {
   const visualizeData = useCallback(() => {
     requestRef.current = window.requestAnimationFrame(() => visualizeData());
     if (!canvasRef.current) {
-      console.log("Canvas not found");
       return;
     }
     const audioData = new Uint8Array(140);
@@ -20,7 +19,6 @@ export const AudioVisualizer: FC<AudioVisualizerProps> = ({ analyser }) => {
     let start = 0;
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) {
-      console.log("Canvas context not found");
       return;
     }
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -63,7 +61,6 @@ export const AudioVisualizer: FC<AudioVisualizerProps> = ({ analyser }) => {
     visualizeData();
     return () => {
       if (requestRef.current) {
-        console.log("Canceling animation frame");
         cancelAnimationFrame(requestRef.current);
       }
     };

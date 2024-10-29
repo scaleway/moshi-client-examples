@@ -71,7 +71,6 @@ export const useServerInfo = () => {
       const infos = parseInfo(message.data);
       if (infos) {
         setServerInfo(infos);
-        console.log("received metadata", infos);
       }
     }
   }, [setServerInfo]);

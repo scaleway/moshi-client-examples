@@ -18,7 +18,6 @@ export const useSocket = ({
   const sendMessage = useCallback(
     (message: WSMessage) => {
       if (!socket || !isConnected) {
-        console.log("socket not connected");
         return;
       }
       socket.send(encodeMessage(message));
@@ -27,12 +26,10 @@ export const useSocket = ({
   );
 
   const onConnect = useCallback(() => {
-    console.log("connected, now waiting for handshake.");
     // setIsConnected(true);
   }, [setIsConnected]);
 
   const onDisconnect = useCallback(() => {
-    console.log("disconnected");
     if (onDisconnectProp) {
       onDisconnectProp();
     }
@@ -45,7 +42,6 @@ export const useSocket = ({
       const dataArray = new Uint8Array(eventData.data);
       const message = decodeMessage(dataArray);
       if (message.type == "handshake") {
-        console.log("Handshake received, let's rocknroll.");
         setIsConnected(true);
       }
       if (!onMessage) {
@@ -73,7 +69,6 @@ export const useSocket = ({
     ws.addEventListener("error", onErrorEvent); // Ajout du gestionnaire d'erreur
 
     setSocket(ws);
-    console.log("Socket created", ws);
     lastMessageTime.current = Date.now();
   }, [uri, onMessage, onDisconnectProp]);
 
@@ -92,7 +87,6 @@ export const useSocket = ({
     }
     let intervalId = setInterval(() => {
       if (lastMessageTime.current && Date.now() - lastMessageTime.current > 10000) {
-        console.log("closing socket due to inactivity", socket);
         socket?.close();
         onDisconnect();
         clearInterval(intervalId);

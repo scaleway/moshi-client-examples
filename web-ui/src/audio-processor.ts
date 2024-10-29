@@ -10,8 +10,6 @@ function asSamples(mili) {
 class MoshiProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    console.log("Moshi processor lives", currentFrame, sampleRate);
-    console.log(currentTime);
 
     // Buffer length definitions
     let frameSize = asSamples(80);
@@ -34,7 +32,6 @@ class MoshiProcessor extends AudioWorkletProcessor {
 
     this.port.onmessage = (event) => {
       if (event.data.type == "reset") {
-        console.log("Reset audio processor state.");
         this.initState();
         return;
       }
@@ -44,11 +41,9 @@ class MoshiProcessor extends AudioWorkletProcessor {
         this.start();
       }
       if (this.pidx < 20) {
-        console.log(this.timestamp(), "Got packet", this.pidx++, asMs(this.currentSamples()), asMs(frame.length))
 
       }
       if (this.currentSamples() >= this.totalMaxBufferSamples()) {
-        console.log(this.timestamp(), "Dropping packets", asMs(this.currentSamples()), asMs(this.totalMaxBufferSamples()));
         let target = this.initialBufferSamples + this.partialBufferSamples
         while (this.currentSamples() > (this.initialBufferSamples + this.partialBufferSamples)) {
           let first = this.frames[0];
@@ -61,10 +56,8 @@ class MoshiProcessor extends AudioWorkletProcessor {
             this.offsetInFirstBuffer = 0;
           }
         }
-        console.log(this.timestamp(), "Packet dropped", asMs(this.currentSamples()));
         this.maxBufferSamples += this.maxBufferSamplesIncrement;
         this.maxBufferSamples = Math.min(this.maxMaxBufferWithIncrements, this.maxBufferSamples);
-        console.log("Increased maxBuffer to", asMs(this.maxBufferSamples));
       }
       let delay = this.currentSamples() / sampleRate;
       this.port.postMessage({
@@ -144,7 +137,6 @@ class MoshiProcessor extends AudioWorkletProcessor {
       return true;
     }
     if (this.firstOut) {
-      console.log(this.timestamp(), "Audio resumed", asMs(this.currentSamples()), this.remainingPartialBufferSamples);
     }
     let first = this.frames[0];
     let out_idx = 0;
@@ -166,10 +158,8 @@ class MoshiProcessor extends AudioWorkletProcessor {
       }
     }
     if (out_idx < output.length) {
-      console.log(this.timestamp(), "Missed some audio", output.length - out_idx);
       this.partialBufferSamples += this.partialBufferIncrement;
       this.partialBufferSamples = Math.min(this.partialBufferSamples, this.maxPartialWithIncrements);
-      console.log("Increased partial buffer to", asMs(this.partialBufferSamples));
       // We ran out of a buffer, let's revert to the started state to replenish it.
       this.resetStart();
       for (let i = 0; i < out_idx; i++) {

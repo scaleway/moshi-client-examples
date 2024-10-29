@@ -60,19 +60,16 @@ export const ServerVisualizer: FC<AudioVisualizerProps> = ({ analyser, parent, c
   const visualizeData = useCallback(() => {
     const width = parent.current ? Math.min(parent.current.clientWidth, parent.current.clientHeight) : 0;
     if(width !== canvasWidth) {
-      console.log("Setting canvas width");
       setCanvasWidth(width);
     }
     requestRef.current = window.requestAnimationFrame(() => visualizeData());
     if (!canvasRef.current) {
-      console.log("Canvas not found");
       return;
     }
     const ctx = canvasRef.current.getContext("2d");
     const audioData = new Uint8Array(140);
     analyser?.getByteFrequencyData(audioData);
     if(!ctx){
-      console.log("Canvas context not found");
       return;
     }
     const centerX = width / 2;
@@ -96,7 +93,6 @@ export const ServerVisualizer: FC<AudioVisualizerProps> = ({ analyser, parent, c
     visualizeData();
     return () => {
       if (requestRef.current) {
-        console.log("Canceling animation frame");
         cancelAnimationFrame(requestRef.current);
       }
     };

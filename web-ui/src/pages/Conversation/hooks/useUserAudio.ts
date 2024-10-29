@@ -51,7 +51,6 @@ export const useUserAudio = ({
   }, [constraints, setStatus]);
 
   const startRecordingUser = useCallback(async () => {
-    console.log(Date.now() % 1000, "Starting recording in user audio");
     const mediaStream = await getMediaStream();
     if (mediaStream) {
       const analyser = audioContext.current.createAnalyser();
@@ -84,7 +83,6 @@ export const useUserAudio = ({
         // opus actually always works at 48khz, so it seems this is the proper value to use here.
         micDuration.current = recorder.current.encodedSamplePosition / 48000;
         if (chunk_idx < 5) {
-          console.log(Date.now() % 1000, "Mic Data chunk", chunk_idx++, (recorder.current.encodedSamplePosition - lastpos) / 48000, micDuration.current);
           lastpos = recorder.current.encodedSamplePosition;
         }
         if (onDataChunk) {
