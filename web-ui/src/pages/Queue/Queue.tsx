@@ -91,7 +91,7 @@ export const Queue:FC = () => {
   const onConnect = useCallback(async() => {
       if (env.VITE_SECURE !== "") {
         if (!validateToken(token)) {
-          setError("The secret key is invalid. Please enter a correct secret key before logging in.");
+          setError("Error: Invalid API secret key.");
           return;
         }
       }
@@ -146,7 +146,7 @@ export const Queue:FC = () => {
           }
           {env.VITE_SECURE !== "" && (
             <>
-              <Input value={token} onChange={handleTokenChange} placeholder="Enter your secretKey" />
+              <Input value={token} onChange={handleTokenChange} placeholder="Enter your API secret key" />
               {error && <p className="text-red-500">{error}</p>}
             </>
           )}
