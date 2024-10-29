@@ -162,10 +162,6 @@ export const Queue:FC = () => {
             </dialog>
         </>
       </div>
-      <div className="text-center flex justify-end items-center flex-col">
-        <a target="_blank" href="https://kyutai.org/moshi-terms.pdf" className="text-center">Terms of Use</a>
-        <a target="_blank" href="https://kyutai.org/moshi-privacy.pdf" className="text-center">Privacy Policy</a>
-      </div>
     </div>
   )
 };
