@@ -39,7 +39,7 @@ const buildURL = ({
   textSeed: number;
   audioSeed: number;
 }) => {
-  const url = new URL(`wss://${env.VITE_SCW_PROJECT_ID}.ifr.${env.VITE_SCW_DEFAULT_REGION}.scaleway.com/api/chat`);
+  const url = new URL(`wss://${env.VITE_SCW_DEPLOYMENT_UUID}.ifr.${env.VITE_SCW_DEFAULT_REGION}.scaleway.com/api/chat`);
   url.searchParams.append("text_temperature", params.textTemperature.toString());
   url.searchParams.append("text_topk", params.textTopk.toString());
   url.searchParams.append("audio_temperature", params.audioTemperature.toString());

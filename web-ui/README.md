@@ -1,32 +1,43 @@
 # Web UI to run Moshi
 
-## Requirements
-- node
-- npm
-- docker
+This is a web UI to interact with Moshi. Here is how you can use it.
 
-## Get started
-- Deploy your model on Scaleway
-- Generate a new API key
-- Create a file named `.env.production` with the following content:
-```
-VITE_SCW_PROJECT_ID=<Scaleway Project ID>
-VITE_SCW_DEFAULT_REGION=fr-par
-VITE_SECURE="" # Put anything in it if you have created an API key
-```
- where `<Scaleway Project ID>` is your Project ID you can find in the [Scaleway console](https://console.scaleway.com/project/settings)
-- Then do:
+## Requirements
+This client can be run inside a docker container or directly on your machine. Here are the requirements for each case:
+- Docker:
+  - Docker
+- Without Docker:
+  - Node.js
+  - npm
+
+Please refer to the documentation of each of these tools to install them.
+
+## Quick start
+
 ### With docker
+- Create a file named `.env.production` with the following content:
+```sh
+VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint will be associated
+VITE_SCW_DEFAULT_REGION=fr-par
+VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure your endpoint
 ```
-docker build -t moshi-prod .
-docker run -p 5173:5173 moshi-prod
+- Then run the following commands:
+```sh
+docker build -t moshi-web-ui .
+docker run -p 5173:5173 moshi-web-ui
 ```
-- Go to [](http://localhost:5173/)
+- You can access the Web UI at [](https://localhost:5173/)
 
 ### Without docker
-- Rename the file `.env.production` to `.env.local`
+- Create a file named `.env.local` with the following content:
+```sh
+VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint will be associated
+VITE_SCW_DEFAULT_REGION=fr-par
+VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure your endpoint
 ```
+- Then run the following commands:
+```sh
 npm i
 npm run dev
 ```
-- Go to [](https://localhost:5173/)
+- You can access the Web UI at [](https://localhost:5173/)

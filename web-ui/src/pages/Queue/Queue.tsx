@@ -91,7 +91,7 @@ export const Queue:FC = () => {
   const onConnect = useCallback(async() => {
       if (env.VITE_SECURE !== "") {
         if (!validateToken(token)) {
-          setError("Error: Invalid API secret key.");
+          setError("Error: Invalid IAM API key.");
           return;
         }
       }
@@ -146,7 +146,7 @@ export const Queue:FC = () => {
           }
           {env.VITE_SECURE !== "" && (
             <>
-              <Input value={token} onChange={handleTokenChange} placeholder="Enter your API secret key" />
+              <Input value={token} onChange={handleTokenChange} placeholder="Enter your IAM API key" />
               {error && <p className="text-red-500">{error}</p>}
             </>
           )}
