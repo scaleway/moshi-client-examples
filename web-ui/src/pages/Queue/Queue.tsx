@@ -139,7 +139,7 @@ export const Queue:FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-grow justify-center items-center flex-col">
+      <div className="flex flex-grow justify-center items-center flex-col gap-4 py-4">
         <>
           {showMicrophoneAccessMessage &&
             <p className="text-center">Please enable your microphone before proceeding</p>

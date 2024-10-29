@@ -4,7 +4,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 
 export const Input = ({className, error, ...props}:InputProps) => {
   return (
-    <div className="pb-8 relative">
+    <div className="relative">
       <input
         {...props}
         className={`border-2 disabled:bg-gray-100 border-white bg-black p-2 outline-none text-white hover:bg-gray-800 focus:bg-gray-800 p-2 ${className ?? ""}`}
