@@ -4,29 +4,21 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-rand = "0.8.5"
-tracing = "0.1.40"
-tracing-chrome = "0.7.1"
-tracing-subscriber = "0.3.18"
-anyhow = "1.0"
-clap = { version = "4.2.4", features = ["derive"] }
-cpal = "0.15.3"
-rubato = "0.15.0"
-tokio = { version = "1.0", features = ["full"] }
-env_logger = "0.10.1"
-log = "0.4.20"
-futures-util = "0.3.30"
-serde_json = "1.0.115"
-tokio-tungstenite = { version = "0.21.0", features = ["rustls", "native-tls"] }
-opus = "0.3.0"
-ogg = { version = "0.9.1", features = ["async"] }
-rustls = "0.23.5"
-native-tls = "0.2.11"
+anyhow = "1.0.91"
+block = "0.1.6"
 byteorder = "1.5.0"
-
-color-eyre = "0.6.2"
+clap = { version = "4.5.20", features = ["derive"] }
+cpal = "0.15.3"
 crossterm = { version = "0.27.0", features = ["event-stream"] }
+futures-util = "0.3.31"
+log = "0.4.22"
+native-tls = "0.2.12"
+ogg = { version = "0.9.1", features = ["async"] }
+opus = "0.3.0"
 ratatui = "0.27.0"
+rubato = "0.16.1"
+tokio = { version = "1.41.0", features = ["full"] }
+tokio-tungstenite = { version = "0.21.0", features = ["rustls", "native-tls"] }
+tracing = "0.1.40"
 tui-logger = "0.11.2"
-futures = "0.3.28"
 url = "2.5.2"
