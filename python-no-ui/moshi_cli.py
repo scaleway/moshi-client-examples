@@ -153,7 +153,7 @@ async def main(deployment_uuid: str, default_region: str, iam_api_key: str, inse
         else:
             print(f"Error: {e}")
     except aiohttp.client_exceptions.ClientConnectorDNSError:
-        print(f"Error: Invalid deployment UUID '{deployment_uuid}' or invalid region '{default_region}'")
+        print(f"Error: Invalid deployment UUID '{deployment_uuid}' or region '{default_region}'")
     except Exception as e:
         print(f"Error: {e}")
 
