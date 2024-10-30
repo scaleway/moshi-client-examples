@@ -3,7 +3,7 @@
 This is a Python client to interact with Moshi. Here is how you can use it.
 
 ## Requirements
-This client can be run using poetry or pip to handle the dependencies.
+This client can be run using poetry or pip to handle the dependencies. You will need:
 - Python
 - Pip or Poetry
 
