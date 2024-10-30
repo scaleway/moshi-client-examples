@@ -95,9 +95,7 @@ const ws = new WebSocket(WS_URI, {
 });
 
 ws.on('open', () => {
-    console.log('WebSocket connection established.');
     micInstance.start();
-    console.log('Recording started...');
 });
 
 ws.on('message', (data: WebSocket.Data) => {
@@ -112,11 +110,19 @@ ws.on('message', (data: WebSocket.Data) => {
 });
 
 ws.on('close', () => {
-    console.log('WebSocket connection closed.');
     cleanup();
 });
 
-ws.on('error', error => console.error('WebSocket error:', error));
+ws.on('error', error => {
+    if (error.message.includes('Unexpected server response: 403')) {
+        console.error('Error: Invalid IAM API key');
+    } else if (error.message.includes('getaddrinfo ENOTFOUND')) {
+        console.error(`Error: Invalid deployment '${deploymentUuid}' or region '${defaultRegion}'`);
+    } else {
+        console.error('Error:', error);
+    }
+    cleanup();
+});
 
 // Audio encoding and sending via WebSocket
 micInputStream.pipe(encodeProcess.stdin as unknown as Readable);
