@@ -20,41 +20,45 @@ mod multistream;
 
 #[derive(Debug, Parser)]
 struct Args {
-    #[command(subcommand)]
-    command: Command,
+    #[arg(short, long, help = "The deployment UUID to which the endpoint is associated.")]
+    deployment_uuid: String,
+
+    #[arg(short = 'r', long, default_value = "fr-par", help = "The default region of the deployment.")]
+    default_region: String,
+
+    #[arg(short = 'k', long, help = "The IAM API key that secures your endpoint.")]
+    iam_api_key: Option<String>,
+
+    #[arg(long, default_value_t = false, help = "Skip SSL certificate validation.")]
+    insecure: bool,
+
+    #[arg(long, default_value_t = 250)]
+    audio_topk: u32,
+
+    #[arg(long, default_value_t = 0.8)]
+    audio_temperature: f32,
+
+    #[arg(long, default_value_t = 25)]
+    text_topk: u32,
+
+    #[arg(long, default_value_t = 0.7)]
+    text_temperature: f32,
 }
 
-#[derive(Debug, clap::Subcommand)]
-enum Command {
-    Run {
-        #[arg(long)]
-        deployment_id: String,
-
-        #[arg(long)]
-        secret_key: String,
-
-        #[arg(long, default_value_t = 250)]
-        audio_topk: u32,
-
-        #[arg(long, default_value_t = 0.8)]
-        audio_temperature: f32,
-
-        #[arg(long, default_value_t = 25)]
-        text_topk: u32,
-
-        #[arg(long, default_value_t = 0.7)]
-        text_temperature: f32,
-    },
-}
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 10)]
 async fn main() -> Result<()> {
     let args = Args::parse();
     
-    match args.command {
-        Command::Run { deployment_id, secret_key, audio_topk, audio_temperature, text_topk, text_temperature } => {
-            multistream::client::run(deployment_id, secret_key, audio_topk, audio_temperature, text_topk, text_temperature).await?
-        }
-    }
+    multistream::client::run(
+        args.deployment_uuid,
+        args.default_region,
+        args.iam_api_key,
+        args.insecure,
+        args.audio_topk,
+        args.audio_temperature,
+        args.text_topk,
+        args.text_temperature,
+    ).await?;
     Ok(())
 }
