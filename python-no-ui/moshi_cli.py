@@ -6,7 +6,6 @@ import numpy as np
 import queue
 import sphn
 import sounddevice
-import ssl
 
 
 SAMPLE_RATE: int = 24000  # Valid options are 8000, 12000, 16000, 24000, or 48000 Hz
