@@ -17,7 +17,7 @@ Please refer to the documentation of each of these tools to install them.
 ### With docker
 - Create a file named `.env.production` with the following content:
 ```sh
-VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint will be associated
+VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint is associated
 VITE_SCW_DEFAULT_REGION=fr-par
 VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure your endpoint
 ```
@@ -31,7 +31,7 @@ docker run -p 5173:5173 moshi-web-ui
 ### Without docker
 - Create a file named `.env.local` with the following content:
 ```sh
-VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint will be associated
+VITE_SCW_DEPLOYMENT_UUID=<Scaleway Deployment UUID> # The deployment uuid to which the endpoint is associated
 VITE_SCW_DEFAULT_REGION=fr-par
 VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure your endpoint
 ```
