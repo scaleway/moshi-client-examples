@@ -11,7 +11,7 @@ Please refer to the documentation of each of these tools to install them.
 
 ## Quick start
 
-`<Scaleway Deployment UUID>` is the UUID of the deployment to which the endpoint will be associated, and `<IAM API key>` is the IAM API key to secure your endpoint.
+`<Scaleway Deployment UUID>` is the UUID of the deployment to which the endpoint is associated, and `<IAM API key>` is the IAM API key that secures your endpoint.
 
 To run the client, you can use the following commands:
 

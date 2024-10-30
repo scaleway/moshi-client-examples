@@ -161,9 +161,9 @@ async def main(deployment_uuid: str, default_region: str, iam_api_key: str, inse
 if __name__ == "__main__":
     aparser = argparse.ArgumentParser()
 
-    aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID to which the endpoint will be associated.", required=True)
-    aparser.add_argument("-r", "--default-region", type=str, default="fr-par", help="The default region.")
-    aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key.")
+    aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID to which the endpoint is associated.", required=True)
+    aparser.add_argument("-r", "--default-region", type=str, default="fr-par", help="The default region of the deployment.")
+    aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key that secures your endpoint.")
     aparser.add_argument("--insecure", action="store_true", help="Skip SSL certificate validation.")
     args = aparser.parse_args()
 
