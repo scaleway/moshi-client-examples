@@ -8,6 +8,7 @@ This repository contains multiple implementations of the Moshi client across dif
 - **[python-no-ui](python-no-ui/README.md)**: Moshi client without a UI in Python.
 - **[rust-no-ui](rust-no-ui/README.md)**: Moshi client without a UI in Rust.
 - **[rust-ui](rust-ui/README.md)**: Moshi client with a UI in Rust.
+- **[web-ui](web-ui/README.md)**: Moshi client with a web UI.
 
 ## Quickstart
 
