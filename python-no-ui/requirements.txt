@@ -1,7 +1,4 @@
-opuslib==3.0.1
-websockets==13.1
-PyAudio==0.2.14
 aiohttp==3.10.10
-numpy==2.1.2
+numpy==1.26.4
+sounddevice==0.5.0
 sphn==0.1.4
-sounddevice==0.5.1

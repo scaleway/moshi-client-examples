@@ -13,18 +13,40 @@ const CHANNELS = 1;
 const FRAME_SIZE = 1920;
 
 interface Args {
-    deploymentID: string;
+    deploymentUuid: string;
+    defaultRegion: string;
     iamApiKey: string;
+    insecure: boolean;
 }
 
 const argv = yargs(hideBin(process.argv))
-    .option('deploymentID', { alias: 'd', type: 'string', demandOption: true, describe: 'The deployment UUID.' })
-    .option('iamApiKey', { alias: 'k', type: 'string', demandOption: true, describe: 'The IAM API key.' })
+    .option('deployment-uuid', {
+        alias: 'd',
+        type: 'string',
+        demandOption: true,
+        describe: 'The deployment UUID to which the endpoint is associated.',
+    })
+    .option('default-region', {
+        alias: 'r',
+        type: 'string',
+        default: 'fr-par',
+        describe: 'The default region of the deployment.',
+    })
+    .option('iam-api-key', {
+        alias: 'k',
+        type: 'string',
+        describe: 'The IAM API key that secures your endpoint.',
+    })
+    .option('insecure', {
+        type: 'boolean',
+        default: false,
+        describe: 'Skip SSL certificate validation.',
+    })
     .parseSync();
 
-const { deploymentID, iamApiKey } = argv as Args;
+const { deploymentUuid, defaultRegion, iamApiKey, insecure } = argv as Args;
 
-const WS_URI = `wss://${deploymentID}.ifr.fr-srr.scaleway.com/api/chat`;
+const WS_URI = `wss://${deploymentUuid}.ifr.${defaultRegion}.scaleway.com/api/chat`;
 
 const audioQueue = new Queue<Buffer>();
 let decodeBuffer = Buffer.alloc(0);
@@ -69,13 +91,11 @@ const speakerInstance = new Speaker({
 // Configure WebSocket connection
 const ws = new WebSocket(WS_URI, {
     headers: { 'Authorization': `Bearer ${iamApiKey}` },
-    rejectUnauthorized: false,
+    rejectUnauthorized: !insecure,
 });
 
 ws.on('open', () => {
-    console.log('WebSocket connection established.');
     micInstance.start();
-    console.log('Recording started...');
 });
 
 ws.on('message', (data: WebSocket.Data) => {
@@ -90,11 +110,19 @@ ws.on('message', (data: WebSocket.Data) => {
 });
 
 ws.on('close', () => {
-    console.log('WebSocket connection closed.');
     cleanup();
 });
 
-ws.on('error', error => console.error('WebSocket error:', error));
+ws.on('error', error => {
+    if (error.message.includes('Unexpected server response: 403')) {
+        console.error('Error: Invalid IAM API key');
+    } else if (error.message.includes('getaddrinfo ENOTFOUND')) {
+        console.error(`Error: Invalid deployment '${deploymentUuid}' or region '${defaultRegion}'`);
+    } else {
+        console.error('Error:', error);
+    }
+    cleanup();
+});
 
 // Audio encoding and sending via WebSocket
 micInputStream.pipe(encodeProcess.stdin as unknown as Readable);

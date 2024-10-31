@@ -1,28 +1,19 @@
-# TypeScript Client to Run Moshi
+# Node client to run Moshi
+
+This is a Node client written in Typescript to interact with Moshi. Here is how you can use it.
 
 ## Requirements
+This client can be run using your favorite package manager. We will use Yarn in this example. You will need:
+- Node
+- Yarn
 
-- [Node.js](https://nodejs.org/) (>= 14.x)
-  - Install via [nvm](https://github.com/nvm-sh/nvm)
-- [ffmpeg](https://ffmpeg.org/download.html) (must be installed and available in PATH)
-- [yarn](https://yarnpkg.com/) (recommended for managing dependencies)
+## Quickstart
 
-## Get Started
+`<Scaleway Deployment UUID>` is the UUID of the deployment to which the endpoint is associated, and `<IAM API key>` is the IAM API key that secures your endpoint.
 
-### Steps to Run the Client
-
-1. **Deploy your model on Scaleway**
-2. **Generate a new IAM API Key**. This will create a new UUID-based secret key.
-3. **Store your API Key** as `MOSHI_SECRET_KEY`
-4. **Copy your WebSocket endpoint**
-
-Then, follow the steps below to set up and run the client:
-
-### Using Yarn
+To run the client, you can use the following commands:
 
 ```sh
-# Install dependencies
 yarn install
-
-# Run the client
-yarn run start -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
+yarn run start -d <Scaleway Deployment UUID> -k <IAM API key>
+```

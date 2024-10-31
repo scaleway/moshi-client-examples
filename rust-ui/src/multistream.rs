@@ -383,20 +383,19 @@ pub mod client_tui {
         })
     }
 
-    pub async fn run(deployment_id: String, secret_key: String, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
+    pub async fn run(deployment_uuid: String, default_region: String, iam_api_key: Option<String>, insecure: bool, audio_topk: u32, audio_temperature: f32, text_topk: u32, text_temperature: f32) -> Result<()> {
         use tokio_tungstenite::tungstenite::client::IntoClientRequest;
-        let uri = url::Url::parse(&format!("wss://{deployment_id}.ifr.fr-srr.scaleway.com/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
+        let uri = url::Url::parse(&format!("wss://{deployment_uuid}.ifr.{default_region}.scaleway.com/api/chat?=text_temperature={text_temperature}&text_topk={text_topk}&audio_temperature={audio_temperature}&audio_topk={audio_topk}"))?;
         let mut req = uri.into_client_request()?;
         let headers = req.headers_mut();
-        // headers.insert("host", host.parse()?);
-        headers.insert("Authorization", format!("Bearer {secret_key}").parse()?);
+        let iam_api_key = iam_api_key.unwrap_or_default();
+        headers.insert("Authorization", format!("Bearer {iam_api_key}").parse()?);
 
-        //tracing::info!("connecting to {uri}");
         let subs = Arc::new(Mutex::new(vec![]));
         let (_out_stream, output_audio) = crate::audio_io::setup_output_stream(true)?;
         let (_in_stream, input_audio) = crate::audio_io::setup_input_stream()?;
         let connector =
-            native_tls::TlsConnector::builder().danger_accept_invalid_certs(true).build()?;
+            native_tls::TlsConnector::builder().danger_accept_invalid_certs(insecure).build()?;
         let (stream, response) = tokio_tungstenite::connect_async_tls_with_config(
             req,
             None,
@@ -510,13 +509,13 @@ pub mod client_tui {
                                 subs.lock().unwrap().push(text)
                             }
                             3 => {
-                                tracing::error!("unsupported control message")
+                                tracing::warn!("unsupported control message")
                             }
                             4 => {
-                                tracing::error!("unsupported metadata message")
+                                tracing::warn!("unsupported metadata message")
                             }
                             mt => {
-                                tracing::error!("unexpected message type {mt}");
+                                tracing::warn!("unexpected message type {mt}");
                             }
                         }
                     }

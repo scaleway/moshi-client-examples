@@ -1,26 +1,29 @@
 # Python client to run Moshi
+
+This is a Python client to interact with Moshi. Here is how you can use it.
+
 ## Requirements
-  - [pyaudio](https://pypi.org/project/PyAudio/)
-  - [<= Python3.12.7](https://www.python.org/downloads/release/python-3127/)
-  - [poetry](https://python-poetry.org/docs/) (optionnal)
+This client can be run using poetry or pip to handle the dependencies. You will need:
+- Python
+- Pip or Poetry
 
-## Get Started
+Please refer to the documentation of each of these tools to install them.
 
-- Deploy your model on Scaleway
-- Generate a new API Key, it will create a new UUID secret key
-- Store it as MOSHI_SECRET_KEY
-- Copy your endpoint
-- Then do :
+## Quick start
+
+`<Scaleway Deployment UUID>` is the UUID of the deployment to which the endpoint is associated, and `<IAM API key>` is the IAM API key that secures your endpoint.
+
+To run the client, you can use the following commands:
 
 ### With poetry
 ```sh
-poetry env use 3.12.7
+poetry env use 3.12
 poetry install
-poetry run python moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
+poetry run python moshi_cli.py -d <Scaleway Deployment UUID> -k <IAM API key>
 ```
 
 ### Without poetry
 ```sh
 python3 -m pip install -r requirements.txt
-python3 moshi_cli.py -d ${MOSHI_DEPLOYMENT_ID} -k ${MOSHI_SECRET_KEY}
+python3 moshi_cli.py -d <Scaleway Deployment UUID> -k <IAM API key>
 ```

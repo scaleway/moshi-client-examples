@@ -116,7 +116,6 @@ pub(crate) fn setup_output_stream_map<F: FnMut(String) + Send + 'static>(
 ) -> Result<(cpal::Stream, AudioOutputData)> {
     use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
-    println!("Setup audio output stream!");
     let host = cpal::default_host();
     let device = host.default_output_device().context("no output device available")?;
     let mut supported_configs_range = device.supported_output_configs()?;
@@ -129,11 +128,6 @@ pub(crate) fn setup_output_stream_map<F: FnMut(String) + Send + 'static>(
         .clamp(config_range.min_sample_rate(), config_range.max_sample_rate());
     let config: cpal::StreamConfig = config_range.with_sample_rate(sample_rate).into();
     let channels = config.channels as usize;
-    println!(
-        "cpal device: {} {} {config:?}",
-        device.name().unwrap_or_else(|_| "unk".to_string()),
-        config.sample_rate.0
-    );
     let audio_data =
         Arc::new(Mutex::new(AudioOutputData_::new(SAMPLE_RATE, config.sample_rate.0 as usize)?));
     let ad = audio_data.clone();
@@ -189,7 +183,6 @@ pub(crate) fn setup_output_stream_map<F: FnMut(String) + Send + 'static>(
 pub(crate) fn setup_input_stream() -> Result<(cpal::Stream, AudioOutputData)> {
     use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
-    println!("Setup audio input stream!");
     let host = cpal::default_host();
     let device = host.default_input_device().context("no input device available")?;
     let mut supported_configs_range = device.supported_input_configs()?;
@@ -203,11 +196,6 @@ pub(crate) fn setup_input_stream() -> Result<(cpal::Stream, AudioOutputData)> {
     let sample_rate = cpal::SampleRate(SAMPLE_RATE as u32)
         .clamp(config_range.min_sample_rate(), config_range.max_sample_rate());
     let config: cpal::StreamConfig = config_range.with_sample_rate(sample_rate).into();
-    println!(
-        "cpal device: {} {} {config:?}",
-        device.name().unwrap_or_else(|_| "unk".to_string()),
-        config.sample_rate.0
-    );
     let audio_data =
         Arc::new(Mutex::new(AudioOutputData_::new(config.sample_rate.0 as usize, SAMPLE_RATE)?));
     let ad = audio_data.clone();

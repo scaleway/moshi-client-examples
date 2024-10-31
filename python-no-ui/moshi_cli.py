@@ -6,7 +6,6 @@ import numpy as np
 import queue
 import sphn
 import sounddevice
-import ssl
 
 
 SAMPLE_RATE: int = 24000  # Valid options are 8000, 12000, 16000, 24000, or 48000 Hz
@@ -112,10 +111,10 @@ def play_audio_callback(queue: queue.Queue):
     return play_audio
 
 
-async def main(deployment_id: str, secret_key: str, insecure: bool):
+async def main(deployment_uuid: str, default_region: str, iam_api_key: str, insecure: bool):
     # Endpoint
-    uri = f"wss://{deployment_id}.ifr.fr-srr.scaleway.com/api/chat"
-    headers = {"Authorization": f"Bearer {secret_key}"}
+    uri = f"wss://{deployment_uuid}.ifr.{default_region}.scaleway.com/api/chat"
+    headers = {"Authorization": f"Bearer {iam_api_key}"}
 
     # Initialize the audio queue, which is used as a jitter buffer to smooth out variations in packet arrival times
     audio_queue = queue.Queue()
@@ -150,11 +149,11 @@ async def main(deployment_id: str, secret_key: str, insecure: bool):
                     )
     except aiohttp.client_exceptions.WSServerHandshakeError as e:
         if e.status == 403:
-            print("Error: Invalid IAM API key.")
+            print("Error: Invalid IAM API key")
         else:
             print(f"Error: {e}")
     except aiohttp.client_exceptions.ClientConnectorDNSError:
-        print("Error: Invalid deployment UUID.")
+        print(f"Error: Invalid deployment UUID '{deployment_uuid}' or region '{default_region}'")
     except Exception as e:
         print(f"Error: {e}")
 
@@ -162,12 +161,13 @@ async def main(deployment_id: str, secret_key: str, insecure: bool):
 if __name__ == "__main__":
     aparser = argparse.ArgumentParser()
 
-    aparser.add_argument("-d", "--deployment-id", type=str, help="The deployment UUID.", required=True)
-    aparser.add_argument("-k", "--secret-key", type=str, help="The IAM API key.", required=True)
+    aparser.add_argument("-d", "--deployment-uuid", type=str, help="The deployment UUID to which the endpoint is associated.", required=True)
+    aparser.add_argument("-r", "--default-region", type=str, default="fr-par", help="The default region of the deployment.")
+    aparser.add_argument("-k", "--iam-api-key", type=str, help="The IAM API key that secures your endpoint.")
     aparser.add_argument("--insecure", action="store_true", help="Skip SSL certificate validation.")
     args = aparser.parse_args()
 
     try:
-        asyncio.run(main(args.deployment_id, args.secret_key, args.insecure))
+        asyncio.run(main(args.deployment_uuid, args.default_region, args.iam_api_key, args.insecure))
     except KeyboardInterrupt:
         print("Exiting.")
