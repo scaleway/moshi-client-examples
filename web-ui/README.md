@@ -26,7 +26,7 @@ VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure
 docker build -t moshi-web-ui .
 docker run -p 5173:5173 moshi-web-ui
 ```
-- You can access the Web UI at [](https://localhost:5173/)
+- You can access the Web UI at [http://localhost:5173/](http://localhost:5173/)
 
 ### Without docker
 - Create a file named `.env.local` with the following content:
@@ -40,4 +40,4 @@ VITE_SECURE="" # Put anything in it if you have created an IAM API key to secure
 npm i
 npm run dev
 ```
-- You can access the Web UI at [](https://localhost:5173/)
+- You can access the Web UI at [http://localhost:5173/](http://localhost:5173/)
