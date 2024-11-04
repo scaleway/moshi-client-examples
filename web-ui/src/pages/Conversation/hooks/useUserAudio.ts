@@ -76,15 +76,10 @@ export const useUserAudio = ({
         encoderApplication: 2049,
         streamPages: true,
       };
-      let chunk_idx = 0;
-      let lastpos = 0;
       recorder.current = new Recorder(recorderOptions);
       recorder.current.ondataavailable = (data: Uint8Array) => {
         // opus actually always works at 48khz, so it seems this is the proper value to use here.
         micDuration.current = recorder.current.encodedSamplePosition / 48000;
-        if (chunk_idx < 5) {
-          lastpos = recorder.current.encodedSamplePosition;
-        }
         if (onDataChunk) {
           onDataChunk(data);
         }
